@@ -1,0 +1,6 @@
+{
+  "name": "STIL . studio",
+  "description": "An aesthetic Pinterest-style inspiration web app to curate, save, upload images, follow creators, and manage creative moodboards under the STIL aesthetic.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
