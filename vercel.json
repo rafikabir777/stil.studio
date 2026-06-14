@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/api/config-status", "destination": "/api/config-status.ts" },
     { "source": "/api/:path*", "destination": "/api/index.ts" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
