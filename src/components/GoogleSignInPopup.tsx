@@ -94,7 +94,16 @@ export default function GoogleSignInPopup({ onSignIn, onClose }: GoogleSignInPop
         body: JSON.stringify({ credential }),
       });
 
-      const data = await response.json().catch(() => ({}));
+      const responseText = await response.text();
+      const data = responseText
+        ? (() => {
+            try {
+              return JSON.parse(responseText);
+            } catch {
+              return { error: responseText.slice(0, 180) };
+            }
+          })()
+        : {};
       if (!response.ok || !data.creator || !data.token) {
         throw new Error(data.error || "Google sign-in could not be verified.");
       }
