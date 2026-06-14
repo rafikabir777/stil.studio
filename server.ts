@@ -2,7 +2,6 @@ import express from "express";
 import type { NextFunction, Request, Response } from "express";
 import path from "path";
 import { createHmac, randomBytes, timingSafeEqual } from "crypto";
-import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 
@@ -28,13 +27,21 @@ const isSupabaseConfigured = SUPABASE_URL.length > 0 && SUPABASE_KEY.length > 0;
 const isGoogleAuthConfigured = GOOGLE_CLIENT_ID.length > 0;
 const isSessionConfigured = SESSION_SECRET.length >= 32;
 
-const supabase = isSupabaseConfigured
-  ? createClient(SUPABASE_URL, SUPABASE_KEY, {
+let supabaseInitError = "";
+let supabase: any = null;
+
+if (isSupabaseConfigured) {
+  try {
+    supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
       auth: {
         persistSession: false,
       },
-    })
-  : null;
+    });
+  } catch (err: any) {
+    supabaseInitError = err.message || "Supabase client could not be initialized.";
+    console.warn("Supabase initialization failed:", supabaseInitError);
+  }
+}
 
 if (isSupabaseConfigured) {
   console.log(`Supabase securely initialized server-side with URL: ${SUPABASE_URL}`);
@@ -403,9 +410,10 @@ async function ensurePinOwnership(pinId: string, userId: string) {
 
 app.get("/api/config-status", (_req, res) => {
   res.json({
-    isConfigured: isSupabaseConfigured,
+    isConfigured: Boolean(supabase),
     isGoogleAuthConfigured,
     isSessionConfigured,
+    supabaseInitError,
     storageBucket: STORAGE_BUCKET,
   });
 });
@@ -859,6 +867,7 @@ if (!isVercel) {
   async function startStandaloneServer() {
     if (process.env.NODE_ENV !== "production") {
       console.log("Vite dev server middleware loaded.");
+      const { createServer: createViteServer } = await import("vite");
       const vite = await createViteServer({
         server: { middlewareMode: true },
         appType: "spa",
