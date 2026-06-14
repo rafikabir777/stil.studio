@@ -438,7 +438,12 @@ app.post("/api/auth/google", authApiRateLimit, async (req, res) => {
 
     const tokenResponse = await fetch(tokenInfoUrl);
     if (!tokenResponse.ok) {
-      return res.status(401).json({ error: "Google credential could not be verified." });
+      const verificationError = await tokenResponse.text().catch(() => "");
+      console.warn("Google token verification failed:", tokenResponse.status, verificationError);
+      return res.status(401).json({
+        error: "Google credential could not be verified.",
+        detail: `Google verification returned ${tokenResponse.status}.`,
+      });
     }
 
     const tokenInfo = await tokenResponse.json();
