@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef, MouseEvent } from "react";
 import { AppState, Creator, Pin, Board } from "./types";
 import { initialCreators, initialPins, initialBoards } from "./data/initialData";
-import { Search, Plus, Home, Settings, Sliders, LogIn, ChevronLeft, Sparkles, Compass, Folder, Heart, User, CheckCircle, Database, Copy, Check } from "lucide-react";
+import { Search, Plus, Home, Settings, Sliders, LogIn, ChevronLeft, Sparkles, Compass, Folder, Heart, User, CheckCircle, Copy, Check } from "lucide-react";
 
 // Supabase Cloud Integrations
 import { 
-  SUPABASE_SETUP_SQL,
   dbGetCreators, 
   dbUpsertProfile, 
   dbGetPins, 
@@ -24,7 +23,6 @@ import UploadModal from "./components/UploadModal";
 import GoogleSignInPopup from "./components/GoogleSignInPopup";
 import GridSettingsPopup from "./components/GridSettingsPopup";
 import ProfileView from "./components/ProfileView";
-import DatabaseInfoModal from "./components/DatabaseInfoModal";
 import { getPersistedPins, persistPins } from "./lib/persistence";
 
 const sortByNewest = <T extends { createdAt?: string }>(items: T[]) =>
@@ -117,7 +115,6 @@ export default function App() {
   // --- Supabase Cloud Sync Effect ---
   const [supabaseLoading, setSupabaseLoading] = useState(false);
   const [isSupabaseConfigured, setIsSupabaseConfigured] = useState(false);
-  const [showDbInfo, setShowDbInfo] = useState(false);
   const [dbSyncedMsg, setDbSyncedMsg] = useState<string | null>(null);
   const [nextPinsCursor, setNextPinsCursor] = useState<string | null>(null);
   const [isLoadingMorePins, setIsLoadingMorePins] = useState(false);
@@ -590,23 +587,22 @@ export default function App() {
 
         {/* Top-right menu: Auth & Profile states */}
         <div className="flex items-center gap-3 shrink-0">
-          {/* Supabase Status Indicator/Button */}
-          <button
-            id="header-btn-database"
-            onClick={() => setShowDbInfo(true)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition cursor-pointer ${
-              isSupabaseConfigured
-                ? "bg-emerald-950/20 border-emerald-900/60 text-emerald-400 hover:bg-emerald-950/40"
-                : "bg-zinc-950/40 border-zinc-900 text-zinc-400 hover:border-zinc-800 hover:text-zinc-200"
-            }`}
-            title={isSupabaseConfigured ? "Database connected live" : "Setup real database sync"}
+          {/* Passive Supabase status indicator */}
+          <span
+            id="header-database-status"
+            role="status"
+            aria-label={isSupabaseConfigured ? "Database connected" : "Database offline"}
+            title={isSupabaseConfigured ? "Database connected" : "Database offline"}
+            className="flex h-8 w-8 items-center justify-center rounded-full"
           >
-            <Database className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">
-              {isSupabaseConfigured ? "Connected" : "Local Sync"}
-            </span>
-            <span className={`h-1.5 w-1.5 rounded-full ${isSupabaseConfigured ? "bg-emerald-400" : "bg-zinc-500"}`} />
-          </button>
+            <span
+              className={`h-2.5 w-2.5 rounded-full animate-pulse ${
+                isSupabaseConfigured
+                  ? "bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.85)]"
+                  : "bg-zinc-500 shadow-[0_0_10px_rgba(113,113,122,0.45)]"
+              }`}
+            />
+          </span>
 
           {currentUser ? (
             <button
@@ -980,14 +976,6 @@ export default function App() {
           onChangeSize={setGridSize}
           onChangePadding={setGridPadding}
           onClose={() => setShowGridSettings(false)}
-        />
-      )}
-
-      {/* 5. Supabase Configuration guide modal */}
-      {showDbInfo && (
-        <DatabaseInfoModal
-          isConfigured={isSupabaseConfigured}
-          onClose={() => setShowDbInfo(false)}
         />
       )}
 
