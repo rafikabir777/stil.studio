@@ -100,9 +100,16 @@ export default function UploadModal({
       .map((t) => t.trim().toLowerCase())
       .filter((t) => t.length > 0);
 
-    const storedImageUrl = imageUrl.startsWith("data:")
-      ? await dbUploadImage(imageUrl, fileName, authToken)
-      : imageUrl;
+    let storedImageUrl = imageUrl;
+    try {
+      storedImageUrl = imageUrl.startsWith("data:")
+        ? (await dbUploadImage(imageUrl, fileName, authToken)) || ""
+        : imageUrl;
+    } catch (err: any) {
+      setUploadError(err.message || "Image upload failed. Confirm your Supabase Storage bucket is configured.");
+      setIsSubmitting(false);
+      return;
+    }
 
     if (!storedImageUrl) {
       setUploadError("Image upload failed. Confirm your Supabase Storage bucket is configured.");
