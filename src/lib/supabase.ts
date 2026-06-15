@@ -148,18 +148,13 @@ export async function dbUpsertPin(pin: Pin, authToken?: string): Promise<Pin | n
 }
 
 export async function dbUploadImage(dataUrl: string, fileName: string, authToken?: string): Promise<string | null> {
-  try {
-    const res = await fetch("/api/uploads/image", {
-      method: "POST",
-      headers: authHeaders(authToken),
-      body: JSON.stringify({ dataUrl, fileName }),
-    });
-    const data = await readJson<{ url: string }>(res, { url: "" });
-    return data.url || null;
-  } catch (err) {
-    console.error("Error uploading image via proxy:", err);
-    return null;
-  }
+  const res = await fetch("/api/uploads/image", {
+    method: "POST",
+    headers: authHeaders(authToken),
+    body: JSON.stringify({ dataUrl, fileName }),
+  });
+  const data = await readJson<{ url: string }>(res, { url: "" });
+  return data.url || null;
 }
 
 export async function dbGetBoards(): Promise<Board[]> {
